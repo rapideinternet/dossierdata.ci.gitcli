@@ -46,6 +46,11 @@ class ValidateLabelPrCommand extends Command
         $pr = $this->parsePrUrl(env('CIRCLE_PULL_REQUEST')) ?? $this->option('pr');
         $labels = explode(',', $this->argument('labels'));
 
+        if ($pr == false) {
+            $this->error('No active PR');
+            exit(3);
+        }
+
         $this->table([], [
             ['Organization', $organization],
             ['Project', $project],
@@ -94,7 +99,7 @@ class ValidateLabelPrCommand extends Command
         exit(2);
     }
 
-    public function parsePrUrl(string $uri)
+    public function parsePrUrl(?string $uri)
     {
         return substr($uri, strrpos($uri, '/') + 1);
     }
