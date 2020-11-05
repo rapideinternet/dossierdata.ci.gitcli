@@ -13,7 +13,7 @@ class ValidateLabelPrCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'github:pr:validate-label {org} {project} {pr} {labels}';
+    protected $signature = 'github:pr:validate-label {labels} {--org} {--project} {--pr} ';
 
     /**
      * The description of the command.
@@ -40,9 +40,10 @@ class ValidateLabelPrCommand extends Command
             'Accept' => 'application/json'
         ];
 
-        $organization = $this->argument('org');
-        $project = $this->argument('project');
-        $pr = $this->argument('pr');
+
+        $organization = env('CIRCLE_PROJECT_USERNAME') ?? $this->option('org');
+        $project = env('CIRCLE_PROJECT_REPONAME') ?? $this->option('project');
+        $pr = $this->parsePrUrl(env('CIRCLE_PULL_REQUEST')) ?? $this->option('pr');
         $labels = explode(',', $this->argument('labels'));
 
         $this->table([], [
@@ -53,6 +54,7 @@ class ValidateLabelPrCommand extends Command
         ]);
 
         $uri = sprintf('/repos/%s/%s/pulls/%s', $organization, $project, $pr);
+
 
         $request = new Request('GET', $uri, $headers);
         $response = $client->sendRequest($request);
@@ -90,5 +92,10 @@ class ValidateLabelPrCommand extends Command
         $this->error('No response from github, not proceeding');
 
         exit(2);
+    }
+
+    public function parsePrUrl(string $uri)
+    {
+        return substr($uri, strrpos($uri, '/') + 1);
     }
 }
