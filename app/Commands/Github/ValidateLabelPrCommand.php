@@ -31,6 +31,11 @@ class ValidateLabelPrCommand extends Command
     {
         $this->title('GitHub label validation');
 
+        if (in_array(env('CIRCLE_BRANCH'), explode(',', env('DEFAULT_BRANCHES', 'development,staging,master')))) {
+            $this->info('Default branch always proceeding');
+            exit(0);
+        }
+
         $client = new Client([
             'base_uri' => 'https://api.github.com'
         ]);
